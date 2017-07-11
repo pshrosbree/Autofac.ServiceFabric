@@ -25,9 +25,11 @@
 
 using System;
 using Microsoft.ServiceFabric.Actors.Runtime;
+using Autofac.Builder;
 
 namespace Autofac.Integration.ServiceFabric
 {
+
     /// <summary>
     /// Extension methods for registering actors with Autofac and Service Fabric.
     /// </summary>
@@ -43,7 +45,7 @@ namespace Autofac.Integration.ServiceFabric
         /// <typeparam name="TActor">The type of the actor to register.</typeparam>
         /// <exception cref="ArgumentException">Thrown when <typeparamref name="TActor"/> is not a valid actor type.</exception>
         /// <remarks>The actor will be wrapped in a dynamic proxy and must be public and not sealed.</remarks>
-        public static void RegisterActor<TActor>(
+        public static IRegistrationBuilder<TActor, ConcreteReflectionActivatorData, SingleRegistrationStyle> RegisterActor<TActor>(
             this ContainerBuilder builder,
             Func<ActorBase, IActorStateProvider, IActorStateManager> stateManagerFactory = null,
             IActorStateProvider stateProvider = null,
@@ -57,11 +59,13 @@ namespace Autofac.Integration.ServiceFabric
             if (!actorType.CanBeProxied())
                 throw new ArgumentException(actorType.GetInvalidProxyTypeErrorMessage());
 
-            builder.RegisterServiceWithInterception<TActor, ActorInterceptor>();
+            var registrationBuilder = builder.RegisterServiceWithInterception<TActor, ActorInterceptor>();
 
             builder.RegisterBuildCallback(
                 c => c.Resolve<IActorFactoryRegistration>().RegisterActorFactory<TActor>(
                     c, stateManagerFactory, stateProvider, settings));
+
+            return registrationBuilder;
         }
     }
 }

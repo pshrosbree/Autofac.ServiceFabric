@@ -24,6 +24,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 
 using System;
+using Autofac.Builder;
 using Autofac.Extras.DynamicProxy;
 using Castle.DynamicProxy;
 
@@ -51,14 +52,12 @@ namespace Autofac.Integration.ServiceFabric
             builder.Properties.Add(MetadataKey, true);
         }
 
-        internal static void RegisterServiceWithInterception<TService, TInterceptor>(this ContainerBuilder builder)
+        internal static IRegistrationBuilder<TService, ConcreteReflectionActivatorData, SingleRegistrationStyle> RegisterServiceWithInterception<TService, TInterceptor>(this ContainerBuilder builder)
             where TService : class
-            where TInterceptor : IInterceptor
-        {
-            builder.RegisterType(typeof(TService))
+            where TInterceptor : IInterceptor 
+            => builder.RegisterType<TService>()
                 .InstancePerLifetimeScope()
                 .EnableClassInterceptors()
                 .InterceptedBy(typeof(TInterceptor));
-        }
     }
 }
